@@ -1,0 +1,20 @@
+name: Main Branch Push & PR
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      # Purge specific jsDelivr URLs
+      - name: Purge jsDelivr cache
+        uses: gacts/purge-jsdelivr-cache@v1
+        with:
+          url: |
+            https://cdn.jsdelivr.net/gh/solution8-com/s8-utilities@latest/broenbotjs/chat.bundle.es.js
