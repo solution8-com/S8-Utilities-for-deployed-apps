@@ -1,5 +1,5 @@
 # Changelog
 
 ## Unreleased
-- ensure webhook text is stripped of any `<verbatim>` tags before we parse it so the message renderer stays stable.
-- sanitize the chat textarea before we send it (newline sequences become single spaces and extra whitespace is collapsed) so the webhook never receives empty/multiline input that causes the backend to drop the response.
+- add `stripVerbatimBlocks` so `<verbatim>` … `</verbatim>` segments are removed before parsing webhook responses, guarding the renderer from injected fragments.
+- add `sanitizeInputTextForWebhook` so newline sequences convert to single spaces before we send them to the webhook, preventing empty/multiline payloads that trigger backend failures.

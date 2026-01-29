@@ -96,7 +96,16 @@ var EMPTY_OBJ = {},
         let t = isString(e) ? Number(e) : NaN;
         return isNaN(t) ? e : t;
     },
-    _globalThis, getGlobalThis = () => _globalThis || (typeof globalThis < "u" ? globalThis : typeof self < "u" ? self : typeof window < "u" ? window : typeof global < "u" ? global : {});
+    _globalThis;
+
+function getGlobalThis() {
+    if (_globalThis) return _globalThis;
+    if (typeof globalThis < "u") return _globalThis = globalThis;
+    if (typeof self < "u") return _globalThis = self;
+    if (typeof window < "u") return _globalThis = window;
+    if (typeof global < "u") return _globalThis = global;
+    return _globalThis = {};
+}
 
 function normalizeStyle(e) {
     if (isArray$5(e)) {
@@ -157,7 +166,7 @@ var isRef$1 = (e) => !!(e && e.__v_isRef === !0),
     stringifySymbol = (e, t = "") => isSymbol$5(e) ? `Symbol(${e.description ?? t})` : e,
     activeEffectScope, EffectScope = class {
         constructor(e = !1) {
-            this.detached = e, this._active = !0, this._on = 0, this.effects = [], this.cleanups = [], this._isPaused = !1, this.parent = activeEffectScope, !e && activeEffectScope && (this.index = (activeEffectScope.scopes || = []).push(this) - 1);
+            this.detached = e, this._active = !0, this._on = 0, this.effects = [], this.cleanups = [], this._isPaused = !1, this.parent = activeEffectScope, !e && activeEffectScope && (this.index = (activeEffectScope.scopes ||=[]).push(this) - 1);
         }
         get active() {
             return this._active;
@@ -296,7 +305,7 @@ function endBatch() {
             if (t.next = void 0, t.flags &= -9, t.flags & 1) try {
                 t.trigger();
             } catch (t) {
-                e || = t;
+                e ||=t;
             }
             t = n;
         }
@@ -781,7 +790,7 @@ function createInstrumentations(e, t) {
             let r = toRaw(this),
                 { has: i, get: o } = getProto(r),
                 s = i.call(r, e);
-            s || = (e = toRaw(e), i.call(r, e));
+            s ||=(e = toRaw(e), i.call(r, e));
             let c = o.call(r, e);
             return r.set(e, n), s ? hasChanged(n, c) && trigger(r, "set", e, n, c) : trigger(r, "add", e, n), this;
         },
@@ -789,7 +798,7 @@ function createInstrumentations(e, t) {
             let t = toRaw(this),
                 { has: n, get: r } = getProto(t),
                 i = n.call(t, e);
-            i || = (e = toRaw(e), n.call(t, e));
+            i ||=(e = toRaw(e), n.call(t, e));
             let o = r ? r.call(t, e) : void 0,
                 s = t.delete(e);
             return i && trigger(t, "delete", e, void 0, o), s;
@@ -1090,7 +1099,7 @@ function watch$2(e, t, n = EMPTY_OBJ) {
 }
 
 function traverse(e, t = Infinity, n) {
-    if (t <= 0 || !isObject$3(e) || e.__v_skip || (n || = /* @__PURE__ */ new Map(), (n.get(e) || 0) >= t)) return e;
+    if (t <= 0 || !isObject$3(e) || e.__v_skip || (n ||=/* @__PURE__ */ new Map(), (n.get(e) || 0) >= t)) return e;
     if (n.set(e, t), t--, isRef(e)) traverse(e.value, t, n);
     else if (isArray$5(e))
         for (let r = 0; r < e.length; r++) traverse(e[r], t, n);
@@ -1195,7 +1204,7 @@ function queueJob(e) {
 }
 
 function queueFlush() {
-    currentFlushPromise || = resolvedPromise.then(flushJobs);
+    currentFlushPromise ||=resolvedPromise.then(flushJobs);
 }
 
 function queuePostFlushCb(e) {
@@ -1269,7 +1278,7 @@ function withCtx(e, t = currentRenderingInstance, n) {
 function withDirectives(e, t) {
     if (currentRenderingInstance === null) return e;
     let n = getComponentPublicInstance(currentRenderingInstance),
-        r = e.dirs || = [];
+        r = e.dirs ||=[];
     for (let e = 0; e < t.length; e++) {
         let [i, o, s, c = EMPTY_OBJ] = t[e];
         i && (isFunction$2(i) && (i = {
@@ -1335,7 +1344,7 @@ function doWatch(e, t, n = EMPTY_OBJ) {
     if (isInSSRComponentSetup) {
         if (o === "sync") {
             let e = useSSRContext();
-            u = e.__watcherHandles || = [];
+            u = e.__watcherHandles ||=[];
         } else if (!l) {
             let e = () => {};
             return e.stop = NOOP, e.resume = NOOP, e.pause = NOOP, e;
@@ -1748,7 +1757,7 @@ function onDeactivated(e, t) {
 }
 
 function registerKeepAliveHook(e, t, n = currentInstance) {
-    let r = e.__wdc || = () => {
+    let r = e.__wdc ||=() => {
         let t = n;
         for (; t;) {
             if (t.isDeactivated) return;
@@ -1772,7 +1781,7 @@ function injectToKeepAliveRoot(e, t, n, r) {
 function injectHook(e, t, n = currentInstance, r = !1) {
     if (n) {
         let i = n[e] || (n[e] = []),
-            o = t.__weh || = (...r) => {
+            o = t.__weh ||=(...r) => {
                 pauseTracking();
                 let i = setCurrentInstance(n),
                     o = callWithAsyncErrorHandling(t, n, e, r);
@@ -1899,10 +1908,10 @@ var getPublicInstance = (e) => e ? isStatefulComponent(e) ? getComponentPublicIn
         $host: (e) => e.ce,
         $emit: (e) => e.emit,
         $options: (e) => resolveMergedOptions(e),
-        $forceUpdate: (e) => e.f || = () => {
+        $forceUpdate: (e) => e.f ||=() => {
             queueJob(e.update);
         },
-        $nextTick: (e) => e.n || = nextTick.bind(e.proxy),
+        $nextTick: (e) => e.n ||=nextTick.bind(e.proxy),
         $watch: (e) => instanceWatch.bind(e)
     }),
     hasSetupBinding = (e, t) => e !== EMPTY_OBJ && !e.__isScriptSetup && hasOwn(e, t),
@@ -1958,7 +1967,7 @@ function useAttrs() {
 
 function getContext(e) {
     let t = getCurrentInstance();
-    return t.setupContext || = createSetupContext(t);
+    return t.setupContext ||=createSetupContext(t);
 }
 
 function normalizePropsOrEmits(e) {
@@ -2010,7 +2019,7 @@ function applyOptions(e) {
     }
     if (B(onBeforeMount, f), B(onMounted, h), B(onBeforeUpdate, g), B(onUpdated, _), B(onActivated, x), B(onDeactivated, S), B(onErrorCaptured, M), B(onRenderTracked, k), B(onRenderTriggered, A), B(onBeforeUnmount, w), B(onUnmounted, E), B(onServerPrefetch, N), isArray$5(F))
         if (F.length) {
-            let t = e.exposed || = {};
+            let t = e.exposed ||={};
             F.forEach((e) => {
                 Object.defineProperty(t, e, {
                     get: () => n[e],
@@ -2018,7 +2027,7 @@ function applyOptions(e) {
                     enumerable: !0
                 });
             });
-        } else e.exposed || = {};
+        } else e.exposed ||={};
     D && e.render === NOOP && (e.render = D), I != null && (e.inheritAttrs = I), L && (e.components = L), R && (e.directives = R), N && markAsyncBoundary(e);
 }
 
@@ -2289,7 +2298,7 @@ function renderComponentRoot(e) {
 }
 var getFunctionalFallthrough = (e) => {
         let t;
-        for (let n in e)(n === "class" || n === "style" || isOn(n)) && ((t || = {})[n] = e[n]);
+        for (let n in e)(n === "class" || n === "style" || isOn(n)) && ((t ||={})[n] = e[n]);
         return t;
     },
     filterModelListeners = (e, t) => {
@@ -2378,7 +2387,7 @@ function setFullProps(e, t, n, r) {
             if (isReservedProp(l)) continue;
             let u = t[l],
                 d;
-            i && hasOwn(i, d = camelize(l)) ? !o || !o.includes(d) ? n[d] = u : (c || = {})[d] = u : isEmitListener(e.emitsOptions, l) || (!(l in r) || u !== r[l]) && (r[l] = u, s = !0);
+            i && hasOwn(i, d = camelize(l)) ? !o || !o.includes(d) ? n[d] = u : (c ||={})[d] = u : isEmitListener(e.emitsOptions, l) || (!(l in r) || u !== r[l]) && (r[l] = u, s = !0);
         }
     if (o) {
         let t = toRaw(n),
@@ -2716,7 +2725,7 @@ function baseCreateRenderer(e, t) {
         }
         _ & 8 ? (f & 16 && Y(u, i, o), h !== u && d(n, h)) : f & 16 ? _ & 16 ? G(u, h, n, r, i, o, s, c, l) : Y(u, i, o, !0) : (f & 8 && d(n, ""), _ & 16 && M(h, n, r, i, o, s, c, l));
     }, W = (e, t, n, r, i, o, s, c, l) => {
-        e || = EMPTY_ARR, t || = EMPTY_ARR;
+        e ||=EMPTY_ARR, t ||=EMPTY_ARR;
         let u = e.length,
             d = t.length,
             f = Math.min(u, d),
@@ -2885,7 +2894,7 @@ function baseCreateRenderer(e, t) {
         return n ? h(n) : t;
     }, _9 = !1, y9 = (e, t, n) => {
         let r;
-        e == null ? t._vnode && (J(t._vnode, null, null, !0), r = t._vnode.component) : C(t._vnode || null, e, t, null, null, null, n), t._vnode = e, _9 || = (_9 = !0, flushPreFlushCbs(r), flushPostFlushCbs(), !1);
+        e == null ? t._vnode && (J(t._vnode, null, null, !0), r = t._vnode.component) : C(t._vnode || null, e, t, null, null, null, n), t._vnode = e, _9 ||=(_9 = !0, flushPreFlushCbs(r), flushPostFlushCbs(), !1);
     }, b9 = {
         p: C,
         um: J,
@@ -3338,7 +3347,7 @@ function createSetupContext(e) {
 }
 
 function getComponentPublicInstance(e) {
-    return e.exposed ? e.exposeProxy || = new Proxy(proxyRefs(markRaw(e.exposed)), {
+    return e.exposed ? e.exposeProxy ||=new Proxy(proxyRefs(markRaw(e.exposed)), {
         get(t, n) {
             if (n in t) return t[n];
             if (n in publicPropertiesMap) return publicPropertiesMap[n](e);
@@ -3723,7 +3732,7 @@ function parseName(e) {
 }
 var cachedNow = 0,
     p = /* @__PURE__ */ Promise.resolve(),
-    getNow = () => cachedNow || = (p.then(() => cachedNow = 0), Date.now());
+    getNow = () => cachedNow ||=(p.then(() => cachedNow = 0), Date.now());
 
 function createInvoker(e, t) {
     let n = (e) => {
@@ -3824,7 +3833,7 @@ var vModelText = {
         exact: (e, t) => systemModifiers.some((n) => e[`${n}Key`] && !t.includes(n))
     },
     withModifiers = (e, t) => {
-        let n = e._withMods || = {},
+        let n = e._withMods ||={},
             r = t.join(".");
         return n[r] || (n[r] = ((n, ...r) => {
             for (let e = 0; e < t.length; e++) {
@@ -3844,7 +3853,7 @@ var vModelText = {
         delete: "backspace"
     },
     withKeys = (e, t) => {
-        let n = e._withKeys || = {},
+        let n = e._withKeys ||={},
             r = t.join(".");
         return n[r] || (n[r] = ((n) => {
             if (!("key" in n)) return;
@@ -3856,7 +3865,7 @@ var vModelText = {
     renderer;
 
 function ensureRenderer() {
-    return renderer || = createRenderer(rendererOptions);
+    return renderer ||=createRenderer(rendererOptions);
 }
 var createApp = ((...e) => {
     let t = ensureRenderer().createApp(...e),
@@ -4419,13 +4428,13 @@ var Button_default = /* @__PURE__ */ defineComponent({
                     x9
                 ].forEach((e) => e(n, r)), n.isCompiled = !0;
                 let c = null;
-                return typeof n.keywords == "object" && n.keywords.$pattern && (n.keywords = Object.assign({}, n.keywords), c = n.keywords.$pattern, delete n.keywords.$pattern), c || = /\w+/, n.keywords && = w9(n.keywords, e.case_insensitive), o.keywordPatternRe = t(c, !0), r && (n.begin || = /\B|\b/, o.beginRe = t(o.begin), !n.end && !n.endsWithParent && (n.end = /\B|\b/), n.end && (o.endRe = t(o.end)), o.terminatorEnd = g(o.end) || "", n.endsWithParent && r.terminatorEnd && (o.terminatorEnd += (n.end ? "|" : "") + r.terminatorEnd)), n.illegal && (o.illegalRe = t(n.illegal)), n.contains || = [], n.contains = [].concat(...n.contains.map(function(e) {
+                return typeof n.keywords == "object" && n.keywords.$pattern && (n.keywords = Object.assign({}, n.keywords), c = n.keywords.$pattern, delete n.keywords.$pattern), c ||=/\w+/, n.keywords && = w9(n.keywords, e.case_insensitive), o.keywordPatternRe = t(c, !0), r && (n.begin ||=/\B|\b/, o.beginRe = t(o.begin), !n.end && !n.endsWithParent && (n.end = /\B|\b/), n.end && (o.endRe = t(o.end)), o.terminatorEnd = g(o.end) || "", n.endsWithParent && r.terminatorEnd && (o.terminatorEnd += (n.end ? "|" : "") + r.terminatorEnd)), n.illegal && (o.illegalRe = t(n.illegal)), n.contains ||=[], n.contains = [].concat(...n.contains.map(function(e) {
                     return R9(e === "self" ? n : e);
                 })), n.contains.forEach(function(e) {
                     s(e, o);
                 }), n.starts && s(n.starts, r), o.matcher = i(o), o;
             }
-            if (e.compilerExtensions || = [], e.contains && e.contains.includes("self")) throw Error("ERR: contains `self` is not supported at the top-level of a language.  See documentation.");
+            if (e.compilerExtensions ||=[], e.contains && e.contains.includes("self")) throw Error("ERR: contains `self` is not supported at the top-level of a language.  See documentation.");
             return e.classNameAliases = o(e.classNameAliases || {}), s(e);
         }
 
@@ -4796,7 +4805,7 @@ var Button_default = /* @__PURE__ */ defineComponent({
                         else throw e;
                         i = l;
                     }
-                    i.name || = n, t[n] = i, i.rawDefinition = r.bind(null, e), i.aliases && B(i.aliases, { languageName: n });
+                    i.name ||=n, t[n] = i, i.rawDefinition = r.bind(null, e), i.aliases && B(i.aliases, { languageName: n });
                 }
 
                 function L(e) {
@@ -12269,7 +12278,7 @@ var require_markdown_it_link_attributes = /* @__PURE__ */ __commonJSMin(((e, t) 
             }
             if (C) {
                 if (e.env.references === void 0) return !1;
-                if (u < x && e.src.charCodeAt(u) === 91 ? (S = u + 1, u = e.md.helpers.parseLinkLabel(e, u), u >= 0 ? s = e.src.slice(S, u++) : u = c + 1) : u = c + 1, s || = e.src.slice(l, c), f = e.env.references[n(s)], !f) return e.pos = y, !1;
+                if (u < x && e.src.charCodeAt(u) === 91 ? (S = u + 1, u = e.md.helpers.parseLinkLabel(e, u), u >= 0 ? s = e.src.slice(S, u++) : u = c + 1) : u = c + 1, s ||=e.src.slice(l, c), f = e.env.references[n(s)], !f) return e.pos = y, !1;
                 g = f.href, _ = f.title;
             }
             return t || (e.pos = l, e.posMax = c, h = e.push("link_open", "a", 1), h.attrs = i = [
@@ -12296,7 +12305,7 @@ var require_markdown_it_link_attributes = /* @__PURE__ */ __commonJSMin(((e, t) 
                 d++;
             } else {
                 if (e.env.references === void 0) return !1;
-                if (d < w && e.src.charCodeAt(d) === 91 ? (x = d + 1, d = e.md.helpers.parseLinkLabel(e, d), d >= 0 ? c = e.src.slice(x, d++) : d = l + 1) : d = l + 1, c || = e.src.slice(u, l), f = e.env.references[n(c)], !f) return e.pos = C, !1;
+                if (d < w && e.src.charCodeAt(d) === 91 ? (x = d + 1, d = e.md.helpers.parseLinkLabel(e, d), d >= 0 ? c = e.src.slice(x, d++) : d = l + 1) : d = l + 1, c ||=e.src.slice(u, l), f = e.env.references[n(c)], !f) return e.pos = C, !1;
                 S = f.href, g = f.title;
             }
             return t || (s = e.src.slice(u, l), e.md.inline.parse(s, e.md, e.env, y = []), _ = e.push("image", "img", 0), _.attrs = i = [
@@ -12501,7 +12510,7 @@ var require_markdown_it_link_attributes = /* @__PURE__ */ __commonJSMin(((e, t) 
     require_re = /* @__PURE__ */ __commonJSMin(((e, t) => {
         t.exports = function(e) {
             var t = {};
-            e || = {}, t.src_Any = require_regex$3().source, t.src_Cc = require_regex$2().source, t.src_Z = require_regex().source, t.src_P = require_regex$4().source, t.src_ZPCc = [
+            e ||={}, t.src_Any = require_regex$3().source, t.src_Cc = require_regex$2().source, t.src_Z = require_regex().source, t.src_P = require_regex$4().source, t.src_ZPCc = [
                 t.src_Z,
                 t.src_P,
                 t.src_Cc
@@ -13031,12 +13040,12 @@ var require_markdown_it_link_attributes = /* @__PURE__ */ __commonJSMin(((e, t) 
             var n = new this.core.State(e, this, t);
             return this.core.process(n), n.tokens;
         }, C.prototype.render = function(e, t) {
-            return t || = {}, this.renderer.render(this.parse(e, t), this.options, t);
+            return t ||={}, this.renderer.render(this.parse(e, t), this.options, t);
         }, C.prototype.parseInline = function(e, t) {
             var n = new this.core.State(e, this, t);
             return n.inlineMode = !0, this.core.process(n), n.tokens;
         }, C.prototype.renderInline = function(e, t) {
-            return t || = {}, this.renderer.render(this.parseInline(e, t), this.options, t);
+            return t ||={}, this.renderer.render(this.parseInline(e, t), this.options, t);
         }, t.exports = C;
     })),
     require_markdown_it = /* @__PURE__ */ __commonJSMin(((e, t) => {
@@ -13180,10 +13189,10 @@ var native_default = { randomUUID: typeof crypto < "u" && crypto.randomUUID && c
 
 function v4(e, t, n) {
     if (native_default.randomUUID && !t && !e) return native_default.randomUUID();
-    e || = {};
+    e ||={};
     var r = e.random || (e.rng || rng)();
     if (r[6] = r[6] & 15 | 64, r[8] = r[8] & 63 | 128, t) {
-        n || = 0;
+        n ||=0;
         for (var i = 0; i < 16; ++i) t[n + i] = r[i];
         return t;
     }
@@ -13689,7 +13698,7 @@ var _hoisted_1$236 = {
 };
 
 function render$212(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$236, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$236, [...t[0] ||=[createBaseVNode("path", {
         fill: "currentColor",
         d: "M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z"
     }, null, -1)]]);
@@ -13728,7 +13737,7 @@ var _hoisted_1$235 = { class: "chat-get-started" },
         __name: "GetStarted",
         setup(e) {
             let { t } = useI18n();
-            return (e, n) => (openBlock(), createElementBlock("div", _hoisted_1$235, [createVNode(Button_default, { onClick: n[0] || = (t) => e.$emit("click:button") }, {
+            return (e, n) => (openBlock(), createElementBlock("div", _hoisted_1$235, [createVNode(Button_default, { onClick: n[0] ||=(t) => e.$emit("click:button") }, {
                 default: withCtx(() => [createTextVNode(toDisplayString(unref(t)("getStarted")), 1)]),
                 _: 1
             })]));
@@ -13738,7 +13747,7 @@ var _hoisted_1$235 = { class: "chat-get-started" },
     _hoisted_1$234 = { class: "chat-powered-by" };
 
 function _sfc_render$8(e, t) {
-    return openBlock(), createElementBlock("div", _hoisted_1$234, [...t[0] || = [createTextVNode(" Powered by ", -1), createBaseVNode("a", { href: "https://n8n.io?utm_source=n8n-external&utm_medium=widget-powered-by" }, "n8n", -1)]]);
+    return openBlock(), createElementBlock("div", _hoisted_1$234, [...t[0] ||=[createTextVNode(" Powered by ", -1), createBaseVNode("a", { href: "https://n8n.io?utm_source=n8n-external&utm_medium=widget-powered-by" }, "n8n", -1)]]);
 }
 var PoweredBy_default = /* @__PURE__ */ __plugin_vue_export_helper_default(_sfc_main$8, [
         ["render", _sfc_render$8]
@@ -13814,7 +13823,7 @@ var _hoisted_1$232 = {
 };
 
 function render$211(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$232, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$232, [...t[0] ||=[createBaseVNode("path", {
         fill: "currentColor",
         d: "M16.5 6v11.5a4 4 0 0 1-4 4a4 4 0 0 1-4-4V5A2.5 2.5 0 0 1 11 2.5A2.5 2.5 0 0 1 13.5 5v10.5a1 1 0 0 1-1 1a1 1 0 0 1-1-1V6H10v9.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5V5a4 4 0 0 0-4-4a4 4 0 0 0-4 4v12.5a5.5 5.5 0 0 0 5.5 5.5a5.5 5.5 0 0 0 5.5-5.5V6z"
     }, null, -1)]]);
@@ -13830,7 +13839,7 @@ var paperclip_default$1 = {
     };
 
 function render$210(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$231, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$231, [...t[0] ||=[createBaseVNode("path", {
         fill: "currentColor",
         d: "m2 21l21-9L2 3v7l15 2l-15 2z"
     }, null, -1)]]);
@@ -13846,7 +13855,7 @@ var send_default$1 = {
     };
 
 function render$209(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$230, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$230, [...t[0] ||=[createBaseVNode("path", {
         fill: "currentColor",
         d: "M20 6.91L17.09 4L12 9.09L6.91 4L4 6.91L9.09 12L4 17.09L6.91 20L12 14.91L17.09 20L20 17.09L14.91 12z"
     }, null, -1)]]);
@@ -13862,7 +13871,7 @@ var closeThick_default = {
     };
 
 function render$208(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$229, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$229, [...t[0] ||=[createBaseVNode("path", {
         fill: "currentColor",
         d: "M13 9h5.5L13 3.5zM6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.11.89-2 2-2m0 18h12v-8l-4 4l-2-2zM8 9a2 2 0 0 0-2 2a2 2 0 0 0 2 2a2 2 0 0 0 2-2a2 2 0 0 0-2-2"
     }, null, -1)]]);
@@ -13878,7 +13887,7 @@ var fileImage_default = {
     };
 
 function render$207(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$228, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$228, [...t[0] ||=[createBaseVNode("path", {
         fill: "currentColor",
         d: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-1 11h-2v5a2 2 0 0 1-2 2a2 2 0 0 1-2-2a2 2 0 0 1 2-2c.4 0 .7.1 1 .3V11h3zm0-4V3.5L18.5 9z"
     }, null, -1)]]);
@@ -13894,7 +13903,7 @@ var fileMusic_default = {
     };
 
 function render$206(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$227, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$227, [...t[0] ||=[createBaseVNode("path", {
         fill: "currentColor",
         d: "M13 9h5.5L13 3.5zM6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.11.89-2 2-2m9 16v-2H6v2zm3-4v-2H6v2z"
     }, null, -1)]]);
@@ -13910,7 +13919,7 @@ var fileText_default = {
     };
 
 function render$205(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$226, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$226, [...t[0] ||=[createBaseVNode("path", {
         fill: "currentColor",
         d: "M13 9h5.5L13 3.5zM6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.11.89-2 2-2m11 17v-6l-3 2.2V13H7v6h7v-2.2z"
     }, null, -1)]]);
@@ -13926,7 +13935,7 @@ var fileVideo_default = {
     };
 
 function render$204(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$225, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$225, [...t[0] ||=[createBaseVNode("path", {
         fill: "currentColor",
         d: "M14 3v2h3.59l-9.83 9.83l1.41 1.41L19 6.41V10h2V3m-2 16H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2z"
     }, null, -1)]]);
@@ -14168,7 +14177,7 @@ var openInNew_default = {
                 withDirectives(createBaseVNode("textarea", {
                     ref_key: "chatTextArea",
                     ref: u,
-                    "onUpdate:modelValue": t[0] || = (e) => d.value = e,
+                    "onUpdate:modelValue": t[0] ||=(e) => d.value = e,
                     "data-test-id": "chat-input",
                     disabled: y.value,
                     placeholder: unref(r)(n.placeholder),
@@ -14285,7 +14294,7 @@ var openInNew_default = {
     };
 
 function render$203(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$221, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$221, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14305,7 +14314,7 @@ var align_right_default = {
     };
 
 function render$202(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$220, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$220, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14330,7 +14339,7 @@ var archive_default = {
     };
 
 function render$201(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$219, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$219, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14355,7 +14364,7 @@ var archive_restore_default = {
     };
 
 function render$200(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$218, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$218, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14375,7 +14384,7 @@ var arrow_down_default$1 = {
     };
 
 function render$199(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$217, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$217, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14395,7 +14404,7 @@ var arrow_left_default$1 = {
     };
 
 function render$198(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$216, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$216, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14415,7 +14424,7 @@ var arrow_left_right_default = {
     };
 
 function render$197(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$215, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$215, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14435,7 +14444,7 @@ var arrow_right_default$1 = {
     };
 
 function render$196(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$214, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$214, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14455,7 +14464,7 @@ var arrow_right_from_line_default = {
     };
 
 function render$195(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$213, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$213, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14475,7 +14484,7 @@ var arrow_right_to_line_default = {
     };
 
 function render$194(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$212, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$212, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14495,7 +14504,7 @@ var arrow_up_default = {
     };
 
 function render$193(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$211, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$211, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14515,7 +14524,7 @@ var arrow_up_right_default = {
     };
 
 function render$192(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$210, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$210, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14538,7 +14547,7 @@ var at_sign_default = {
     };
 
 function render$191(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$209, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$209, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14557,7 +14566,7 @@ var badge_check_default = {
     };
 
 function render$190(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$208, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$208, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14580,7 +14589,7 @@ var ban_default = {
     };
 
 function render$189(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$207, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$207, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14600,7 +14609,7 @@ var bell_default = {
     };
 
 function render$188(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$206, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$206, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14620,7 +14629,7 @@ var book_default = {
     };
 
 function render$187(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$205, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$205, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14640,7 +14649,7 @@ var book_open_default = {
     };
 
 function render$186(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$204, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$204, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14669,7 +14678,7 @@ var bot_default = {
     };
 
 function render$185(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$203, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$203, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14688,7 +14697,7 @@ var box_default = {
     };
 
 function render$184(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$202, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$202, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14708,7 +14717,7 @@ var braces_default = {
     };
 
 function render$183(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$201, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$201, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14731,7 +14740,7 @@ var brain_default = {
     };
 
 function render$182(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$200, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$200, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14754,7 +14763,7 @@ var bug_default = {
     };
 
 function render$181(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$199, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$199, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14779,7 +14788,7 @@ var calculator_default = {
     };
 
 function render$180(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$198, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$198, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14808,7 +14817,7 @@ var calendar_default = {
     };
 
 function render$179(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$197, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$197, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14828,7 +14837,7 @@ var case_upper_default = {
     };
 
 function render$178(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$196, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$196, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14848,7 +14857,7 @@ var chart_column_decreasing_default = {
     };
 
 function render$177(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$195, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$195, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14868,7 +14877,7 @@ var check_default = {
     };
 
 function render$176(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$194, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$194, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14888,7 +14897,7 @@ var check_check_default = {
     };
 
 function render$175(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$193, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$193, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14908,7 +14917,7 @@ var chevron_down_default$1 = {
     };
 
 function render$174(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$192, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$192, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14928,7 +14937,7 @@ var chevron_left_default = {
     };
 
 function render$173(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$191, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$191, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14948,7 +14957,7 @@ var chevron_right_default = {
     };
 
 function render$172(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$190, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$190, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14968,7 +14977,7 @@ var chevron_up_default = {
     };
 
 function render$171(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$189, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$189, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -14988,7 +14997,7 @@ var chevrons_down_up_default = {
     };
 
 function render$170(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$188, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$188, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15008,7 +15017,7 @@ var chevrons_left_default = {
     };
 
 function render$169(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$187, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$187, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15028,7 +15037,7 @@ var chevrons_up_down_default = {
     };
 
 function render$168(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$186, [...t[0] || = [createBaseVNode("circle", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$186, [...t[0] ||=[createBaseVNode("circle", {
         cx: "12",
         cy: "12",
         r: "10",
@@ -15050,7 +15059,7 @@ var circle_default = {
     };
 
 function render$167(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$185, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$185, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15073,7 +15082,7 @@ var circle_alert_default = {
     };
 
 function render$166(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$184, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$184, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15096,7 +15105,7 @@ var circle_check_default$1 = {
     };
 
 function render$165(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$183, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$183, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15123,7 +15132,7 @@ var circle_dot_default = {
     };
 
 function render$164(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$182, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$182, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15146,7 +15155,7 @@ var circle_ellipsis_default = {
     };
 
 function render$163(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$181, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$181, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15169,7 +15178,7 @@ var circle_help_default = {
     };
 
 function render$162(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$180, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$180, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15192,7 +15201,7 @@ var circle_minus_default = {
     };
 
 function render$161(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$179, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$179, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15215,7 +15224,7 @@ var circle_pause_default = {
     };
 
 function render$160(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$178, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$178, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15238,7 +15247,7 @@ var circle_play_default = {
     };
 
 function render$159(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$177, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$177, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15261,7 +15270,7 @@ var circle_plus_default = {
     };
 
 function render$158(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$176, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$176, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15292,7 +15301,7 @@ var circle_user_round_default = {
     };
 
 function render$157(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$175, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$175, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15315,7 +15324,7 @@ var circle_x_default = {
     };
 
 function render$156(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$174, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$174, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15341,7 +15350,7 @@ var clipboard_default = {
     };
 
 function render$155(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$173, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$173, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15371,7 +15380,7 @@ var clipboard_check_default = {
     };
 
 function render$154(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$172, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$172, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15397,7 +15406,7 @@ var clipboard_list_default = {
     };
 
 function render$153(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$171, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$171, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15420,7 +15429,7 @@ var clock_default = {
     };
 
 function render$152(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$170, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$170, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15440,7 +15449,7 @@ var cloud_default = {
     };
 
 function render$151(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$169, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$169, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15459,7 +15468,7 @@ var cloud_download_default = {
     };
 
 function render$150(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$168, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$168, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15479,7 +15488,7 @@ var code_default = {
     };
 
 function render$149(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$167, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$167, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15498,7 +15507,7 @@ var cog_default = {
     };
 
 function render$148(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$166, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$166, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15521,7 +15530,7 @@ var columns_3_cog_default = {
     };
 
 function render$147(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$165, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$165, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15544,7 +15553,7 @@ var contrast_default = {
     };
 
 function render$146(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$164, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$164, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15570,7 +15579,7 @@ var copy_default = {
     };
 
 function render$145(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$163, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$163, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15593,7 +15602,7 @@ var crosshair_default = {
     };
 
 function render$144(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$162, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$162, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15621,7 +15630,7 @@ var database_default = {
     };
 
 function render$143(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$161, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$161, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15641,7 +15650,7 @@ var door_open_default = {
     };
 
 function render$142(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$160, [...t[0] || = [createBaseVNode("circle", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$160, [...t[0] ||=[createBaseVNode("circle", {
         cx: "12.1",
         cy: "12.1",
         r: "1",
@@ -15663,7 +15672,7 @@ var dot_default = {
     };
 
 function render$141(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$159, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$159, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15682,7 +15691,7 @@ var download_default = {
     };
 
 function render$140(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$158, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$158, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15705,7 +15714,7 @@ var earth_default = {
     };
 
 function render$139(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$157, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$157, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15740,7 +15749,7 @@ var ellipsis_default = {
     };
 
 function render$138(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$156, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$156, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15775,7 +15784,7 @@ var ellipsis_vertical_default = {
     };
 
 function render$137(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$155, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$155, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15795,7 +15804,7 @@ var equal_default = {
     };
 
 function render$136(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$154, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$154, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15815,7 +15824,7 @@ var expand_default = {
     };
 
 function render$135(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$153, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$153, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15835,7 +15844,7 @@ var external_link_default = {
     };
 
 function render$134(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$152, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$152, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15858,7 +15867,7 @@ var eye_default = {
     };
 
 function render$133(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$151, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$151, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15877,7 +15886,7 @@ var eye_off_default = {
     };
 
 function render$132(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$150, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$150, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15896,7 +15905,7 @@ var file_default = {
     };
 
 function render$131(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$149, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$149, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15923,7 +15932,7 @@ var file_archive_default = {
     };
 
 function render$130(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$148, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$148, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15942,7 +15951,7 @@ var file_code_default = {
     };
 
 function render$129(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$147, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$147, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15962,7 +15971,7 @@ var file_diff_default = {
     };
 
 function render$128(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$146, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$146, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -15981,7 +15990,7 @@ var file_down_default = {
     };
 
 function render$127(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$145, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$145, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16000,7 +16009,7 @@ var file_input_default = {
     };
 
 function render$126(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$144, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$144, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16023,7 +16032,7 @@ var file_output_default = {
     };
 
 function render$125(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$143, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$143, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16042,7 +16051,7 @@ var file_text_default = {
     };
 
 function render$124(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$142, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$142, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16065,7 +16074,7 @@ var files_default = {
     };
 
 function render$123(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$141, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$141, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16084,7 +16093,7 @@ var fingerprint_default = {
     };
 
 function render$122(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$140, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$140, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16104,7 +16113,7 @@ var flask_conical_default = {
     };
 
 function render$121(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$139, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$139, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16124,7 +16133,7 @@ var folder_default = {
     };
 
 function render$120(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$138, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$138, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16144,7 +16153,7 @@ var folder_open_default = {
     };
 
 function render$119(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$137, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$137, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16164,7 +16173,7 @@ var folder_plus_default = {
     };
 
 function render$118(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$136, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$136, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16184,7 +16193,7 @@ var funnel_default = {
     };
 
 function render$117(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$135, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$135, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16203,7 +16212,7 @@ var gem_default = {
     };
 
 function render$116(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$134, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$134, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16228,7 +16237,7 @@ var gift_default = {
     };
 
 function render$115(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$133, [...t[0] || = [createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><path d=\"M6 3v12\"></path><circle cx=\"18\" cy=\"6\" r=\"3\"></circle><circle cx=\"6\" cy=\"18\" r=\"3\"></circle><path d=\"M18 9a9 9 0 0 1-9 9\"></path></g>", 1)]]);
+    return openBlock(), createElementBlock("svg", _hoisted_1$133, [...t[0] ||=[createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><path d=\"M6 3v12\"></path><circle cx=\"18\" cy=\"6\" r=\"3\"></circle><circle cx=\"6\" cy=\"18\" r=\"3\"></circle><path d=\"M18 9a9 9 0 0 1-9 9\"></path></g>", 1)]]);
 }
 var git_branch_default = {
         name: "lucide-git-branch",
@@ -16241,7 +16250,7 @@ var git_branch_default = {
     };
 
 function render$114(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$132, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$132, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16264,7 +16273,7 @@ var globe_default = {
     };
 
 function render$113(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$131, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$131, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16283,7 +16292,7 @@ var graduation_cap_default = {
     };
 
 function render$112(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$130, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$130, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16308,7 +16317,7 @@ var grid_2x2_default = {
     };
 
 function render$111(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$129, [...t[0] || = [createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><circle cx=\"9\" cy=\"12\" r=\"1\"></circle><circle cx=\"9\" cy=\"5\" r=\"1\"></circle><circle cx=\"9\" cy=\"19\" r=\"1\"></circle><circle cx=\"15\" cy=\"12\" r=\"1\"></circle><circle cx=\"15\" cy=\"5\" r=\"1\"></circle><circle cx=\"15\" cy=\"19\" r=\"1\"></circle></g>", 1)]]);
+    return openBlock(), createElementBlock("svg", _hoisted_1$129, [...t[0] ||=[createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><circle cx=\"9\" cy=\"12\" r=\"1\"></circle><circle cx=\"9\" cy=\"5\" r=\"1\"></circle><circle cx=\"9\" cy=\"19\" r=\"1\"></circle><circle cx=\"15\" cy=\"12\" r=\"1\"></circle><circle cx=\"15\" cy=\"5\" r=\"1\"></circle><circle cx=\"15\" cy=\"19\" r=\"1\"></circle></g>", 1)]]);
 }
 var grip_vertical_default = {
         name: "lucide-grip-vertical",
@@ -16321,7 +16330,7 @@ var grip_vertical_default = {
     };
 
 function render$110(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$128, [...t[0] || = [createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><path d=\"M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17\"></path><path d=\"m7 21l1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9M2 16l6 6\"></path><circle cx=\"16\" cy=\"9\" r=\"2.9\"></circle><circle cx=\"6\" cy=\"5\" r=\"3\"></circle></g>", 1)]]);
+    return openBlock(), createElementBlock("svg", _hoisted_1$128, [...t[0] ||=[createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><path d=\"M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17\"></path><path d=\"m7 21l1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9M2 16l6 6\"></path><circle cx=\"16\" cy=\"9\" r=\"2.9\"></circle><circle cx=\"6\" cy=\"5\" r=\"3\"></circle></g>", 1)]]);
 }
 var hand_coins_default = {
         name: "lucide-hand-coins",
@@ -16334,7 +16343,7 @@ var hand_coins_default = {
     };
 
 function render$109(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$127, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$127, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16357,7 +16366,7 @@ var handshake_default = {
     };
 
 function render$108(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$126, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$126, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16377,7 +16386,7 @@ var hard_drive_default = {
     };
 
 function render$107(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$125, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$125, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16406,7 +16415,7 @@ var hard_drive_download_default = {
     };
 
 function render$106(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$124, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$124, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16426,7 +16435,7 @@ var hash_default = {
     };
 
 function render$105(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$123, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$123, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16445,7 +16454,7 @@ var history_default = {
     };
 
 function render$104(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$122, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$122, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16465,7 +16474,7 @@ var hourglass_default = {
     };
 
 function render$103(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$121, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$121, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16484,7 +16493,7 @@ var house_default = {
     };
 
 function render$102(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$120, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$120, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16518,7 +16527,7 @@ var image_default = {
     };
 
 function render$101(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$119, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$119, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16537,7 +16546,7 @@ var inbox_default = {
     };
 
 function render$100(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$118, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$118, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16560,7 +16569,7 @@ var info_default = {
     };
 
 function render$99(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$117, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$117, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16584,7 +16593,7 @@ var key_round_default = {
     };
 
 function render$98(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$116, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$116, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16604,7 +16613,7 @@ var languages_default = {
     };
 
 function render$97(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$115, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$115, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16627,7 +16636,7 @@ var layers_default = {
     };
 
 function render$96(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$114, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$114, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16647,7 +16656,7 @@ var lightbulb_default = {
     };
 
 function render$95(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$113, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$113, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16666,7 +16675,7 @@ var link_default = {
     };
 
 function render$94(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$112, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$112, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16686,7 +16695,7 @@ var list_default = {
     };
 
 function render$93(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$111, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$111, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16706,7 +16715,7 @@ var list_checks_default = {
     };
 
 function render$92(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$110, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$110, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16726,7 +16735,7 @@ var loader2_default = {
     };
 
 function render$91(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$109, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$109, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16752,7 +16761,7 @@ var lock_default = {
     };
 
 function render$90(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$108, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$108, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16772,7 +16781,7 @@ var log_in_default = {
     };
 
 function render$89(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$107, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$107, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16792,7 +16801,7 @@ var log_out_default = {
     };
 
 function render$88(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$106, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$106, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16817,7 +16826,7 @@ var mail_default = {
     };
 
 function render$87(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$105, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$105, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16837,7 +16846,7 @@ var maximize_default = {
     };
 
 function render$86(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$104, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$104, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16857,7 +16866,7 @@ var maximize_2_default = {
     };
 
 function render$85(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$103, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$103, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16877,7 +16886,7 @@ var menu_default = {
     };
 
 function render$84(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$102, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$102, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16897,7 +16906,7 @@ var message_circle_default = {
     };
 
 function render$83(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$101, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$101, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16917,7 +16926,7 @@ var message_square_default = {
     };
 
 function render$82(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$100, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$100, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16937,7 +16946,7 @@ var message_square_plus_default = {
     };
 
 function render$81(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$99, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$99, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16957,7 +16966,7 @@ var messages_square_default = {
     };
 
 function render$80(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$98, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$98, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -16982,7 +16991,7 @@ var mic_default = {
     };
 
 function render$79(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$97, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$97, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17002,7 +17011,7 @@ var milestone_default = {
     };
 
 function render$78(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$96, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$96, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17022,7 +17031,7 @@ var minimize_2_default = {
     };
 
 function render$77(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$95, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$95, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17042,7 +17051,7 @@ var minus_default = {
     };
 
 function render$76(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$94, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$94, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17062,7 +17071,7 @@ var mouse_pointer_default = {
     };
 
 function render$75(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$93, [...t[0] || = [createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><rect width=\"6\" height=\"6\" x=\"16\" y=\"16\" rx=\"1\"></rect><rect width=\"6\" height=\"6\" x=\"2\" y=\"16\" rx=\"1\"></rect><rect width=\"6\" height=\"6\" x=\"9\" y=\"2\" rx=\"1\"></rect><path d=\"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3m-7-4V8\"></path></g>", 1)]]);
+    return openBlock(), createElementBlock("svg", _hoisted_1$93, [...t[0] ||=[createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><rect width=\"6\" height=\"6\" x=\"16\" y=\"16\" rx=\"1\"></rect><rect width=\"6\" height=\"6\" x=\"2\" y=\"16\" rx=\"1\"></rect><rect width=\"6\" height=\"6\" x=\"9\" y=\"2\" rx=\"1\"></rect><path d=\"M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3m-7-4V8\"></path></g>", 1)]]);
 }
 var network_default = {
         name: "lucide-network",
@@ -17075,7 +17084,7 @@ var network_default = {
     };
 
 function render$74(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$92, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$92, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17094,7 +17103,7 @@ var notebook_pen_default = {
     };
 
 function render$73(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$91, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$91, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17117,7 +17126,7 @@ var package_open_default = {
     };
 
 function render$72(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$90, [...t[0] || = [createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><path d=\"M12 22a1 1 0 0 1 0-20a10 9 0 0 1 10 9a5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z\"></path><circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\"></circle><circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\"></circle><circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\"></circle><circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"></circle></g>", 1)]]);
+    return openBlock(), createElementBlock("svg", _hoisted_1$90, [...t[0] ||=[createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><path d=\"M12 22a1 1 0 0 1 0-20a10 9 0 0 1 10 9a5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z\"></path><circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\"></circle><circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\"></circle><circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\"></circle><circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"></circle></g>", 1)]]);
 }
 var palette_default = {
         name: "lucide-palette",
@@ -17130,7 +17139,7 @@ var palette_default = {
     };
 
 function render$71(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$89, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$89, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17155,7 +17164,7 @@ var panel_left_default = {
     };
 
 function render$70(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$88, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$88, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17180,7 +17189,7 @@ var panel_right_default = {
     };
 
 function render$69(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$87, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$87, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17200,7 +17209,7 @@ var paperclip_default = {
     };
 
 function render$68(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$86, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$86, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17231,7 +17240,7 @@ var pause_default = {
     };
 
 function render$67(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$85, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$85, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17251,7 +17260,7 @@ var pen_default = {
     };
 
 function render$66(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$84, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$84, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17271,7 +17280,7 @@ var pencil_default = {
     };
 
 function render$65(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$83, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$83, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17291,7 +17300,7 @@ var pin_default = {
     };
 
 function render$64(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$82, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$82, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17311,7 +17320,7 @@ var play_default = {
     };
 
 function render$63(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$81, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$81, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17331,7 +17340,7 @@ var plug_default = {
     };
 
 function render$62(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$80, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$80, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17351,7 +17360,7 @@ var plus_default = {
     };
 
 function render$61(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$79, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$79, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17370,7 +17379,7 @@ var pocket_knife_default = {
     };
 
 function render$60(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$78, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$78, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17390,7 +17399,7 @@ var power_default = {
     };
 
 function render$59(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$77, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$77, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17409,7 +17418,7 @@ var redo_2_default = {
     };
 
 function render$58(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$76, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$76, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17432,7 +17441,7 @@ var refresh_cw_default = {
     };
 
 function render$57(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$75, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$75, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17452,7 +17461,7 @@ var remove_formatting_default = {
     };
 
 function render$56(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$74, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$74, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17475,7 +17484,7 @@ var rss_default = {
     };
 
 function render$55(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$73, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$73, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17495,7 +17504,7 @@ var satellite_dish_default = {
     };
 
 function render$54(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$72, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$72, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17514,7 +17523,7 @@ var save_default = {
     };
 
 function render$53(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$71, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$71, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17534,7 +17543,7 @@ var scale_default = {
     };
 
 function render$52(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$70, [...t[0] || = [createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><circle cx=\"6\" cy=\"6\" r=\"3\"></circle><path d=\"M8.12 8.12L12 12m8-8L8.12 15.88\"></path><circle cx=\"6\" cy=\"18\" r=\"3\"></circle><path d=\"M14.8 14.8L20 20\"></path></g>", 1)]]);
+    return openBlock(), createElementBlock("svg", _hoisted_1$70, [...t[0] ||=[createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><circle cx=\"6\" cy=\"6\" r=\"3\"></circle><path d=\"M8.12 8.12L12 12m8-8L8.12 15.88\"></path><circle cx=\"6\" cy=\"18\" r=\"3\"></circle><path d=\"M14.8 14.8L20 20\"></path></g>", 1)]]);
 }
 var scissors_default = {
         name: "lucide-scissors",
@@ -17547,7 +17556,7 @@ var scissors_default = {
     };
 
 function render$51(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$69, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$69, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17570,7 +17579,7 @@ var search_default = {
     };
 
 function render$50(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$68, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$68, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17590,7 +17599,7 @@ var send_default = {
     };
 
 function render$49(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$67, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$67, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17627,7 +17636,7 @@ var server_default = {
     };
 
 function render$48(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$66, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$66, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17650,7 +17659,7 @@ var settings_default = {
     };
 
 function render$47(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$65, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$65, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17681,7 +17690,7 @@ var settings_2_default = {
     };
 
 function render$46(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$64, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$64, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17701,7 +17710,7 @@ var share_default = {
     };
 
 function render$45(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$63, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$63, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17721,7 +17730,7 @@ var shield_half_default = {
     };
 
 function render$44(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$62, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$62, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17741,7 +17750,7 @@ var sliders_horizontal_default = {
     };
 
 function render$43(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$61, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$61, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17764,7 +17773,7 @@ var smile_default = {
     };
 
 function render$42(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$60, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$60, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17784,7 +17793,7 @@ var sparkles_default = {
     };
 
 function render$41(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$59, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$59, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17803,7 +17812,7 @@ var split_default = {
     };
 
 function render$40(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$58, [...t[0] || = [createBaseVNode("rect", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$58, [...t[0] ||=[createBaseVNode("rect", {
         width: "18",
         height: "18",
         x: "3",
@@ -17827,7 +17836,7 @@ var square_default = {
     };
 
 function render$39(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$57, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$57, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17852,7 +17861,7 @@ var square_check_default = {
     };
 
 function render$38(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$56, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$56, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17877,7 +17886,7 @@ var square_minus_default = {
     };
 
 function render$37(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$55, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$55, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17896,7 +17905,7 @@ var square_pen_default = {
     };
 
 function render$36(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$54, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$54, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17921,7 +17930,7 @@ var square_plus_default = {
     };
 
 function render$35(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$53, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$53, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17940,7 +17949,7 @@ var sticky_note_default = {
     };
 
 function render$34(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$52, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$52, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17963,7 +17972,7 @@ var sun_default = {
     };
 
 function render$33(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$51, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$51, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -17992,7 +18001,7 @@ var table_default = {
     };
 
 function render$32(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$50, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$50, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18020,7 +18029,7 @@ var tags_default = {
     };
 
 function render$31(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$49, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$49, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18040,7 +18049,7 @@ var terminal_default = {
     };
 
 function render$30(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$48, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$48, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18060,7 +18069,7 @@ var thumbs_down_default = {
     };
 
 function render$29(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$47, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$47, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18080,7 +18089,7 @@ var thumbs_up_default = {
     };
 
 function render$28(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$46, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$46, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18103,7 +18112,7 @@ var timer_default = {
     };
 
 function render$27(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$45, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$45, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18132,7 +18141,7 @@ var toggle_right_default = {
     };
 
 function render$26(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$44, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$44, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18152,7 +18161,7 @@ var trash_2_default = {
     };
 
 function render$25(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$43, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$43, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18172,7 +18181,7 @@ var tree_pine_default = {
     };
 
 function render$24(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$42, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$42, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18192,7 +18201,7 @@ var triangle_alert_default = {
     };
 
 function render$23(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$41, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$41, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18212,7 +18221,7 @@ var type_default = {
     };
 
 function render$22(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$40, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$40, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18231,7 +18240,7 @@ var undo_2_default = {
     };
 
 function render$21(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$39, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$39, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18251,7 +18260,7 @@ var unlink_default = {
     };
 
 function render$20(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$38, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$38, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18274,7 +18283,7 @@ var user_default = {
     };
 
 function render$19(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$37, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$37, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18297,7 +18306,7 @@ var user_check_default = {
     };
 
 function render$18(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$36, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$36, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18330,7 +18339,7 @@ var user_lock_default = {
     };
 
 function render$17(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$35, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$35, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18353,7 +18362,7 @@ var user_round_default = {
     };
 
 function render$16(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$34, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$34, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18376,7 +18385,7 @@ var users_default = {
     };
 
 function render$15(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$33, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$33, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18396,7 +18405,7 @@ var variable_default = {
     };
 
 function render$14(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$32, [...t[0] || = [createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"></rect><circle cx=\"7.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"></circle><path d=\"m7.9 7.9l2.7 2.7\"></path><circle cx=\"16.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"></circle><path d=\"m13.4 10.6l2.7-2.7\"></path><circle cx=\"7.5\" cy=\"16.5\" r=\".5\" fill=\"currentColor\"></circle><path d=\"m7.9 16.1l2.7-2.7\"></path><circle cx=\"16.5\" cy=\"16.5\" r=\".5\" fill=\"currentColor\"></circle><path d=\"m13.4 13.4l2.7 2.7\"></path><circle cx=\"12\" cy=\"12\" r=\"2\"></circle></g>", 1)]]);
+    return openBlock(), createElementBlock("svg", _hoisted_1$32, [...t[0] ||=[createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"></rect><circle cx=\"7.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"></circle><path d=\"m7.9 7.9l2.7 2.7\"></path><circle cx=\"16.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"></circle><path d=\"m13.4 10.6l2.7-2.7\"></path><circle cx=\"7.5\" cy=\"16.5\" r=\".5\" fill=\"currentColor\"></circle><path d=\"m7.9 16.1l2.7-2.7\"></path><circle cx=\"16.5\" cy=\"16.5\" r=\".5\" fill=\"currentColor\"></circle><path d=\"m13.4 13.4l2.7 2.7\"></path><circle cx=\"12\" cy=\"12\" r=\"2\"></circle></g>", 1)]]);
 }
 var vault_default = {
         name: "lucide-vault",
@@ -18409,7 +18418,7 @@ var vault_default = {
     };
 
 function render$13(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$31, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$31, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18434,7 +18443,7 @@ var video_default = {
     };
 
 function render$12(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$30, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$30, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18454,7 +18463,7 @@ var volume_2_default = {
     };
 
 function render$11(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$29, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$29, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18474,7 +18483,7 @@ var volume_x_default = {
     };
 
 function render$10(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$28, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$28, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18494,7 +18503,7 @@ var wand_sparkles_default = {
     };
 
 function render$9(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$27, [...t[0] || = [createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><circle cx=\"12\" cy=\"4.5\" r=\"2.5\"></circle><path d=\"m10.2 6.3l-3.9 3.9\"></path><circle cx=\"4.5\" cy=\"12\" r=\"2.5\"></circle><path d=\"M7 12h10\"></path><circle cx=\"19.5\" cy=\"12\" r=\"2.5\"></circle><path d=\"m13.8 17.7l3.9-3.9\"></path><circle cx=\"12\" cy=\"19.5\" r=\"2.5\"></circle></g>", 1)]]);
+    return openBlock(), createElementBlock("svg", _hoisted_1$27, [...t[0] ||=[createStaticVNode("<g fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\"><circle cx=\"12\" cy=\"4.5\" r=\"2.5\"></circle><path d=\"m10.2 6.3l-3.9 3.9\"></path><circle cx=\"4.5\" cy=\"12\" r=\"2.5\"></circle><path d=\"M7 12h10\"></path><circle cx=\"19.5\" cy=\"12\" r=\"2.5\"></circle><path d=\"m13.8 17.7l3.9-3.9\"></path><circle cx=\"12\" cy=\"19.5\" r=\"2.5\"></circle></g>", 1)]]);
 }
 var waypoints_default = {
         name: "lucide-waypoints",
@@ -18507,7 +18516,7 @@ var waypoints_default = {
     };
 
 function render$8(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$26, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$26, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18542,7 +18551,7 @@ var workflow_default = {
     };
 
 function render$7(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$25, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$25, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18562,7 +18571,7 @@ var wrench_default = {
     };
 
 function render$6(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$24, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$24, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18582,7 +18591,7 @@ var x_default = {
     };
 
 function render$5(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$23, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$23, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18601,7 +18610,7 @@ var youtube_default = {
     };
 
 function render$4(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$22, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$22, [...t[0] ||=[createBaseVNode("path", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18621,7 +18630,7 @@ var zap_default = {
     };
 
 function render$3(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$21, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$21, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -18644,7 +18653,7 @@ var zoom_in_default = {
     };
 
 function render$2(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$20, [...t[0] || = [createBaseVNode("g", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$20, [...t[0] ||=[createBaseVNode("g", {
         fill: "none",
         stroke: "currentColor",
         "stroke-linecap": "round",
@@ -19371,7 +19380,7 @@ function useResizeObserver(e, t, n = {}) {
 var SwipeDirection;
 (function(e) {
     e.UP = "UP", e.RIGHT = "RIGHT", e.DOWN = "DOWN", e.LEFT = "LEFT", e.NONE = "NONE";
-})(SwipeDirection || = {});
+})(SwipeDirection ||={});
 var __defProp = Object.defineProperty,
     __getOwnPropSymbols = Object.getOwnPropertySymbols,
     __hasOwnProp = Object.prototype.hasOwnProperty,
@@ -19383,7 +19392,7 @@ var __defProp = Object.defineProperty,
         value: n
     }) : e[t] = n;
 ((e, t) => {
-    for (var n in t || = {}) __hasOwnProp.call(t, n) && __defNormalProp(e, n, t[n]);
+    for (var n in t ||={}) __hasOwnProp.call(t, n) && __defNormalProp(e, n, t[n]);
     if (__getOwnPropSymbols)
         for (var n of __getOwnPropSymbols(t)) __propIsEnum.call(t, n) && __defNormalProp(e, n, t[n]);
     return e;
@@ -20336,7 +20345,7 @@ function equalByTag(e, t, n, r, i, o, s) {
             var c = _mapToArray_default;
         case setTag:
             var l = r & COMPARE_PARTIAL_FLAG$4;
-            if (c || = _setToArray_default, e.size != t.size && !l) return !1;
+            if (c ||=_setToArray_default, e.size != t.size && !l) return !1;
             var u = s.get(e);
             if (u) return u == t;
             r |= COMPARE_UNORDERED_FLAG$2, s.set(e, t);
@@ -20374,7 +20383,7 @@ function equalObjects(e, t, n, r, i, o) {
             g = !1;
             break;
         }
-        _ || = d == "constructor";
+        _ ||=d == "constructor";
     }
     if (g && !_) {
         var C = e.constructor,
@@ -20403,17 +20412,17 @@ function baseIsEqualDeep(e, t, n, r, i, o) {
         if (!isBuffer_default(t)) return !1;
         s = !0, d = !1;
     }
-    if (h && !d) return o || = new _Stack_default(), s || isTypedArray_default(e) ? _equalArrays_default(e, t, n, r, i, o) : _equalByTag_default(e, t, l, n, r, i, o);
+    if (h && !d) return o ||=new _Stack_default(), s || isTypedArray_default(e) ? _equalArrays_default(e, t, n, r, i, o) : _equalByTag_default(e, t, l, n, r, i, o);
     if (!(n & COMPARE_PARTIAL_FLAG$2)) {
         var g = d && hasOwnProperty$4.call(e, "__wrapped__"),
             _ = f && hasOwnProperty$4.call(t, "__wrapped__");
         if (g || _) {
             var y = g ? e.value() : e,
                 x = _ ? t.value() : t;
-            return o || = new _Stack_default(), i(y, x, n, r, o);
+            return o ||=new _Stack_default(), i(y, x, n, r, o);
         }
     }
-    return h ? (o || = new _Stack_default(), _equalObjects_default(e, t, n, r, i, o)) : !1;
+    return h ? (o ||=new _Stack_default(), _equalObjects_default(e, t, n, r, i, o)) : !1;
 }
 var _baseIsEqualDeep_default = baseIsEqualDeep;
 
@@ -20866,7 +20875,7 @@ var arrow_down_default = /* @__PURE__ */ defineComponent({
             validator: n || s ? (r) => {
                 let o = !1,
                     c = [];
-                if (n && (c = Array.from(n), hasOwn(e, "default") && c.push(i), o || = c.includes(r)), s && (o || = s(r)), !o && c.length > 0) {
+                if (n && (c = Array.from(n), hasOwn(e, "default") && c.push(i), o ||=c.includes(r)), s && (o ||=s(r)), !o && c.length > 0) {
                     let e = [...new Set(c)].map((e) => JSON.stringify(e)).join(", ");
                     warn(`Invalid prop: validation failed${t ? ` for prop "${t}"` : ""}. Expected one of [${e}], got value ${JSON.stringify(r)}.`);
                 }
@@ -22021,7 +22030,7 @@ function en(e, t, n) {
         o = typeof n == "function" ? n(Object.assign({}, t, { placement: e })) : n,
         s = o[0],
         c = o[1];
-    return s || = 0, c = (c || 0) * i, ["left", "right"].indexOf(r) >= 0 ? {
+    return s ||=0, c = (c || 0) * i, ["left", "right"].indexOf(r) >= 0 ? {
         x: c,
         y: s
     } : {
@@ -22245,7 +22254,7 @@ function un(e) {
 function ln(e) {
     var t;
     return function() {
-        return t || = new Promise(function(n) {
+        return t ||=new Promise(function(n) {
             Promise.resolve().then(function() {
                 t = void 0, n(e());
             });
@@ -22730,7 +22739,7 @@ var _export_sfc = (e, t) => {
         formItem: inject(formItemContextKey, void 0)
     }),
     useFormItemInputId = (e, { formItemContext: t, disableIdGeneration: n, disableIdManagement: r }) => {
-        n || = ref(!1), r || = ref(!1);
+        n ||=ref(!1), r ||=ref(!1);
         let i = ref(),
             o, s = computed(() => !!(!e.label && t && t.inputIds && t.inputIds ? .length <= 1));
         return onMounted(() => {
@@ -23115,8 +23124,8 @@ var inputProps = buildProps({
                     onCompositionupdate: x9,
                     onCompositionend: Q,
                     onInput: _9,
-                    onFocus: t[2] || = (...e) => unref(N) && unref(N)(...e),
-                    onBlur: t[3] || = (...e) => unref(F) && unref(F)(...e),
+                    onFocus: t[2] ||=(...e) => unref(N) && unref(N)(...e),
+                    onBlur: t[3] ||=(...e) => unref(F) && unref(F)(...e),
                     onChange: v9,
                     onKeydown: O9
                 }), null, 16, _hoisted_3$4),
@@ -23169,8 +23178,8 @@ var inputProps = buildProps({
                         onCompositionupdate: x9,
                         onCompositionend: Q,
                         onInput: _9,
-                        onFocus: t[0] || = (...e) => unref(N) && unref(N)(...e),
-                        onBlur: t[1] || = (...e) => unref(F) && unref(F)(...e),
+                        onFocus: t[0] ||=(...e) => unref(N) && unref(N)(...e),
+                        onBlur: t[1] ||=(...e) => unref(F) && unref(F)(...e),
                         onChange: v9,
                         onKeydown: O9
                     }), null, 16, _hoisted_2$13),
@@ -24319,8 +24328,8 @@ var DEFAULT_ARROW_OFFSET = 0,
                 style: unref(O),
                 class: unref(D),
                 tabindex: "-1",
-                onMouseenter: t[0] || = (t) => e.$emit("mouseenter", t),
-                onMouseleave: t[1] || = (t) => e.$emit("mouseleave", t)
+                onMouseenter: t[0] ||=(t) => e.$emit("mouseenter", t),
+                onMouseleave: t[1] ||=(t) => e.$emit("mouseleave", t)
             }), [createVNode(unref(ElFocusTrap), {
                 trapped: unref(o),
                 "trap-on-focus-in": !0,
@@ -25904,7 +25913,7 @@ var useAlphaSlider = (e) => {
                 ref: r,
                 class: normalizeClass(unref(l)),
                 style: normalizeStyle(unref(u)),
-                onClick: t[0] || = (...e) => unref(s) && unref(s)(...e)
+                onClick: t[0] ||=(...e) => unref(s) && unref(s)(...e)
             }, null, 6), createBaseVNode("div", {
                 ref_key: "thumb",
                 ref: i,
@@ -26002,7 +26011,7 @@ function _sfc_render$6(e, t, n, r, i, o) {
     return openBlock(), createElementBlock("div", { class: normalizeClass([e.ns.b(), e.ns.is("vertical", e.vertical)]) }, [createBaseVNode("div", {
         ref: "bar",
         class: normalizeClass(e.ns.e("bar")),
-        onClick: t[0] || = (...t) => e.handleClick && e.handleClick(...t)
+        onClick: t[0] ||=(...t) => e.handleClick && e.handleClick(...t)
     }, null, 2), createBaseVNode("div", {
         ref: "thumb",
         class: normalizeClass(e.ns.e("thumb")),
@@ -26585,7 +26594,7 @@ withInstall( /* @__PURE__ */ _export_sfc( /* @__PURE__ */ defineComponent({
             trigger: "click",
             transition: `${unref(o).namespace.value}-zoom-in-top`,
             persistent: "",
-            onHide: t[2] || = (e) => L(!1)
+            onHide: t[2] ||=(e) => L(!1)
         }, {
             content: withCtx(() => [withDirectives((openBlock(), createElementBlock("div", { onKeydown: withKeys(J, ["esc"]) }, [
                 createBaseVNode("div", { class: normalizeClass(unref(o).be("dropdown", "main-wrapper")) }, [createVNode(HueSlider, {
@@ -26616,7 +26625,7 @@ withInstall( /* @__PURE__ */ _export_sfc( /* @__PURE__ */ defineComponent({
                         ref_key: "inputRef",
                         ref: x,
                         modelValue: A.value,
-                        "onUpdate:modelValue": t[0] || = (e) => A.value = e,
+                        "onUpdate:modelValue": t[0] ||=(e) => A.value = e,
                         "validate-event": !1,
                         size: "small",
                         onKeyup: withKeys(U, ["enter"]),
@@ -26657,7 +26666,7 @@ withInstall( /* @__PURE__ */ _export_sfc( /* @__PURE__ */ defineComponent({
                 tabindex: unref(l) ? -1 : e.tabindex,
                 onKeydown: p9,
                 onFocus: T,
-                onBlur: t[1] || = (...e) => unref(w) && unref(w)(...e)
+                onBlur: t[1] ||=(...e) => unref(w) && unref(w)(...e)
             }, [unref(l) ? (openBlock(), createElementBlock("div", {
                 key: 0,
                 class: normalizeClass(unref(o).be("picker", "mask"))
@@ -26719,7 +26728,7 @@ var elPaginationKey = Symbol("elPaginationKey"),
                 disabled: unref(r),
                 "aria-label": e.prevText || unref(n)("el.pagination.prev"),
                 "aria-disabled": unref(r),
-                onClick: t[0] || = (t) => e.$emit("click", t)
+                onClick: t[0] ||=(t) => e.$emit("click", t)
             }, [e.prevText ? (openBlock(), createElementBlock("span", _hoisted_2$9, toDisplayString(e.prevText), 1)) : (openBlock(), createBlock(unref(ElIcon), { key: 1 }, {
                 default: withCtx(() => [(openBlock(), createBlock(resolveDynamicComponent(e.prevIcon)))]),
                 _: 1
@@ -26761,7 +26770,7 @@ var elPaginationKey = Symbol("elPaginationKey"),
                 disabled: unref(r),
                 "aria-label": e.nextText || unref(n)("el.pagination.next"),
                 "aria-disabled": unref(r),
-                onClick: t[0] || = (t) => e.$emit("click", t)
+                onClick: t[0] ||=(t) => e.$emit("click", t)
             }, [e.nextText ? (openBlock(), createElementBlock("span", _hoisted_2$8, toDisplayString(e.nextText), 1)) : (openBlock(), createBlock(unref(ElIcon), { key: 1 }, {
                 default: withCtx(() => [(openBlock(), createBlock(resolveDynamicComponent(e.nextIcon)))]),
                 _: 1
@@ -26906,8 +26915,8 @@ function _sfc_render$3(e, t, n, r, i, o) {
         role: "option",
         "aria-disabled": e.isDisabled || void 0,
         "aria-selected": e.itemSelected,
-        onMouseenter: t[0] || = (...t) => e.hoverItem && e.hoverItem(...t),
-        onClick: t[1] || = withModifiers((...t) => e.selectOptionClick && e.selectOptionClick(...t), ["stop"])
+        onMouseenter: t[0] ||=(...t) => e.hoverItem && e.hoverItem(...t),
+        onClick: t[1] ||=withModifiers((...t) => e.selectOptionClick && e.selectOptionClick(...t), ["stop"])
     }, [renderSlot(e.$slots, "default", {}, () => [createBaseVNode("span", null, toDisplayString(e.currentLabel), 1)])], 42, _hoisted_1$13)), [
         [vShow, e.visible]
     ]);
@@ -27089,7 +27098,7 @@ var useSelect = (e, t, n) => {
                     var e, n;
                     if (!o.value) return;
                     let r = o.value.$el.querySelector("input");
-                    S || = r.clientHeight > 0 ? r.clientHeight + 2 : 0;
+                    S ||=r.clientHeight > 0 ? r.clientHeight + 2 : 0;
                     let s = d.value,
                         c = getComputedStyle(r).getPropertyValue(i.cssVarName("input-height")),
                         u = Number.parseFloat(c) || getComponentSize(B.value || C ? .size),
@@ -27668,9 +27677,9 @@ function _sfc_render$1(e, t, n, r, i, o) {
     return withDirectives((openBlock(), createElementBlock("div", {
         ref: "selectWrapper",
         class: normalizeClass(e.wrapperKls),
-        onMouseenter: t[22] || = (...t) => e.handleMouseEnter && e.handleMouseEnter(...t),
-        onMouseleave: t[23] || = (...t) => e.handleMouseLeave && e.handleMouseLeave(...t),
-        onClick: t[24] || = withModifiers((...t) => e.toggleMenu && e.toggleMenu(...t), ["stop"])
+        onMouseenter: t[22] ||=(...t) => e.handleMouseEnter && e.handleMouseEnter(...t),
+        onMouseleave: t[23] ||=(...t) => e.handleMouseLeave && e.handleMouseLeave(...t),
+        onClick: t[24] ||=withModifiers((...t) => e.toggleMenu && e.toggleMenu(...t), ["stop"])
     }, [createVNode(c, {
         ref: "tooltipRef",
         visible: e.dropMenuVisible,
@@ -27695,8 +27704,8 @@ function _sfc_render$1(e, t, n, r, i, o) {
     }, {
         default: withCtx(() => [createBaseVNode("div", {
             class: "select-trigger",
-            onMouseenter: t[20] || = (t) => e.inputHovering = !0,
-            onMouseleave: t[21] || = (t) => e.inputHovering = !1
+            onMouseenter: t[20] ||=(t) => e.inputHovering = !0,
+            onMouseleave: t[21] ||=(t) => e.inputHovering = !1
         }, [
             e.multiple ? (openBlock(), createElementBlock("div", {
                 key: 0,
@@ -27704,7 +27713,7 @@ function _sfc_render$1(e, t, n, r, i, o) {
                 tabindex: "-1",
                 class: normalizeClass(e.tagsKls),
                 style: normalizeStyle(e.selectTagsStyle),
-                onClick: t[15] || = (...t) => e.focus && e.focus(...t)
+                onClick: t[15] ||=(...t) => e.focus && e.focus(...t)
             }, [
                 e.collapseTags && e.selected.length ? (openBlock(), createBlock(Transition, {
                     key: 0,
@@ -27823,7 +27832,7 @@ function _sfc_render$1(e, t, n, r, i, o) {
                 e.filterable && !e.selectDisabled ? withDirectives((openBlock(), createElementBlock("input", {
                     key: 2,
                     ref: "input",
-                    "onUpdate:modelValue": t[0] || = (t) => e.query = t,
+                    "onUpdate:modelValue": t[0] ||=(t) => e.query = t,
                     type: "text",
                     class: normalizeClass(e.inputKls),
                     disabled: e.selectDisabled,
@@ -27836,22 +27845,22 @@ function _sfc_render$1(e, t, n, r, i, o) {
                     "aria-label": e.ariaLabel,
                     "aria-autocomplete": "none",
                     "aria-haspopup": "listbox",
-                    onFocus: t[1] || = (...t) => e.handleFocus && e.handleFocus(...t),
-                    onBlur: t[2] || = (...t) => e.handleBlur && e.handleBlur(...t),
-                    onKeyup: t[3] || = (...t) => e.managePlaceholder && e.managePlaceholder(...t),
+                    onFocus: t[1] ||=(...t) => e.handleFocus && e.handleFocus(...t),
+                    onBlur: t[2] ||=(...t) => e.handleBlur && e.handleBlur(...t),
+                    onKeyup: t[3] ||=(...t) => e.managePlaceholder && e.managePlaceholder(...t),
                     onKeydown: [
-                        t[4] || = (...t) => e.resetInputState && e.resetInputState(...t),
-                        t[5] || = withKeys(withModifiers((t) => e.navigateOptions("next"), ["prevent"]), ["down"]),
-                        t[6] || = withKeys(withModifiers((t) => e.navigateOptions("prev"), ["prevent"]), ["up"]),
-                        t[7] || = withKeys((...t) => e.handleKeydownEscape && e.handleKeydownEscape(...t), ["esc"]),
-                        t[8] || = withKeys(withModifiers((...t) => e.selectOption && e.selectOption(...t), ["stop", "prevent"]), ["enter"]),
-                        t[9] || = withKeys((...t) => e.deletePrevTag && e.deletePrevTag(...t), ["delete"]),
-                        t[10] || = withKeys((t) => e.visible = !1, ["tab"])
+                        t[4] ||=(...t) => e.resetInputState && e.resetInputState(...t),
+                        t[5] ||=withKeys(withModifiers((t) => e.navigateOptions("next"), ["prevent"]), ["down"]),
+                        t[6] ||=withKeys(withModifiers((t) => e.navigateOptions("prev"), ["prevent"]), ["up"]),
+                        t[7] ||=withKeys((...t) => e.handleKeydownEscape && e.handleKeydownEscape(...t), ["esc"]),
+                        t[8] ||=withKeys(withModifiers((...t) => e.selectOption && e.selectOption(...t), ["stop", "prevent"]), ["enter"]),
+                        t[9] ||=withKeys((...t) => e.deletePrevTag && e.deletePrevTag(...t), ["delete"]),
+                        t[10] ||=withKeys((t) => e.visible = !1, ["tab"])
                     ],
-                    onCompositionstart: t[11] || = (...t) => e.handleComposition && e.handleComposition(...t),
-                    onCompositionupdate: t[12] || = (...t) => e.handleComposition && e.handleComposition(...t),
-                    onCompositionend: t[13] || = (...t) => e.handleComposition && e.handleComposition(...t),
-                    onInput: t[14] || = (...t) => e.debouncedQueryChange && e.debouncedQueryChange(...t)
+                    onCompositionstart: t[11] ||=(...t) => e.handleComposition && e.handleComposition(...t),
+                    onCompositionupdate: t[12] ||=(...t) => e.handleComposition && e.handleComposition(...t),
+                    onCompositionend: t[13] ||=(...t) => e.handleComposition && e.handleComposition(...t),
+                    onInput: t[14] ||=(...t) => e.debouncedQueryChange && e.debouncedQueryChange(...t)
                 }, null, 46, _hoisted_1$12)), [
                     [vModelText, e.query]
                 ]) : createCommentVNode("v-if", !0)
@@ -27867,7 +27876,7 @@ function _sfc_render$1(e, t, n, r, i, o) {
                 id: e.id,
                 ref: "reference",
                 modelValue: e.selectedLabel,
-                "onUpdate:modelValue": t[16] || = (t) => e.selectedLabel = t,
+                "onUpdate:modelValue": t[16] ||=(t) => e.selectedLabel = t,
                 type: "text",
                 placeholder: typeof e.currentPlaceholder == "function" ? e.currentPlaceholder() : e.currentPlaceholder,
                 name: e.name,
@@ -27893,11 +27902,11 @@ function _sfc_render$1(e, t, n, r, i, o) {
                 onCompositionupdate: e.handleComposition,
                 onCompositionend: e.handleComposition,
                 onKeydown: [
-                    t[17] || = withKeys(withModifiers((t) => e.navigateOptions("next"), ["stop", "prevent"]), ["down"]),
-                    t[18] || = withKeys(withModifiers((t) => e.navigateOptions("prev"), ["stop", "prevent"]), ["up"]),
+                    t[17] ||=withKeys(withModifiers((t) => e.navigateOptions("next"), ["stop", "prevent"]), ["down"]),
+                    t[18] ||=withKeys(withModifiers((t) => e.navigateOptions("prev"), ["stop", "prevent"]), ["up"]),
                     withKeys(withModifiers(e.selectOption, ["stop", "prevent"]), ["enter"]),
                     withKeys(e.handleKeydownEscape, ["esc"]),
-                    t[19] || = withKeys((t) => e.visible = !1, ["tab"])
+                    t[19] ||=withKeys((t) => e.visible = !1, ["tab"])
                 ]
             }, createSlots({
                 suffix: withCtx(() => [e.iconComponent && !e.showClose ? (openBlock(), createBlock(l, {
@@ -28333,10 +28342,10 @@ var usePagination = () => inject(elPaginationKey, {}),
                     class: normalizeClass(unref(g)),
                     tabindex: unref(y),
                     "aria-label": unref(o)("el.pagination.prevPages", { pager: e.pagerCount - 2 }),
-                    onMouseenter: t[0] || = (e) => x(!0),
-                    onMouseleave: t[1] || = (e) => l.value = !1,
-                    onFocus: t[2] || = (e) => S(!0),
-                    onBlur: t[3] || = (e) => d.value = !1
+                    onMouseenter: t[0] ||=(e) => x(!0),
+                    onMouseleave: t[1] ||=(e) => l.value = !1,
+                    onFocus: t[2] ||=(e) => S(!0),
+                    onBlur: t[3] ||=(e) => d.value = !1
                 }, [(l.value || d.value) && !e.disabled ? (openBlock(), createBlock(unref(d_arrow_left_default), { key: 0 })) : (openBlock(), createBlock(unref(more_filled_default), { key: 1 }))], 42, _hoisted_3$2)) : createCommentVNode("v-if", !0),
                 (openBlock(!0), createElementBlock(Fragment, null, renderList(unref(h), (t) => (openBlock(), createElementBlock("li", {
                     key: t,
@@ -28352,10 +28361,10 @@ var usePagination = () => inject(elPaginationKey, {}),
                     class: normalizeClass(unref(_)),
                     tabindex: unref(y),
                     "aria-label": unref(o)("el.pagination.nextPages", { pager: e.pagerCount - 2 }),
-                    onMouseenter: t[4] || = (e) => x(),
-                    onMouseleave: t[5] || = (e) => u.value = !1,
-                    onFocus: t[6] || = (e) => S(),
-                    onBlur: t[7] || = (e) => f.value = !1
+                    onMouseenter: t[4] ||=(e) => x(),
+                    onMouseleave: t[5] ||=(e) => u.value = !1,
+                    onFocus: t[6] ||=(e) => S(),
+                    onBlur: t[7] ||=(e) => f.value = !1
                 }, [(u.value || f.value) && !e.disabled ? (openBlock(), createBlock(unref(d_arrow_right_default), { key: 0 })) : (openBlock(), createBlock(unref(more_filled_default), { key: 1 }))], 42, _hoisted_5)) : createCommentVNode("v-if", !0),
                 e.pageCount > 1 ? (openBlock(), createElementBlock("li", {
                     key: 3,
@@ -28497,7 +28506,7 @@ withInstall( /* @__PURE__ */ defineComponent({
         }
 
         function C(e, t) {
-            e && (e.props || = {}, e.props.class = [e.props.class, t].join(" "));
+            e && (e.props ||={}, e.props.class = [e.props.class, t].join(" "));
         }
         return provide(elPaginationKey, {
             pageCount: h,
@@ -28728,7 +28737,7 @@ var require_default$1 = /* @__PURE__ */ __commonJSMin(((e) => {
             e = o(e || {}), e.whiteList = e.whiteList || n.whiteList, e.onAttr = e.onAttr || n.onAttr, e.onIgnoreAttr = e.onIgnoreAttr || n.onIgnoreAttr, e.safeAttrValue = e.safeAttrValue || n.safeAttrValue, this.options = e;
         }
         s.prototype.process = function(e) {
-            if (e || = "", e = e.toString(), !e) return "";
+            if (e ||="", e = e.toString(), !e) return "";
             var t = this.options,
                 n = t.whiteList,
                 o = t.onAttr,
@@ -28958,7 +28967,7 @@ var require_default$1 = /* @__PURE__ */ __commonJSMin(((e) => {
                 if (w.lastIndex = 0, w.test(n)) return "";
             } else if (t === "style") {
                 if (T.lastIndex = 0, T.test(n) || (E.lastIndex = 0, E.test(n) && (w.lastIndex = 0, w.test(n)))) return "";
-                i !== !1 && (i || = o, n = i.process(n));
+                i !== !1 && (i ||=o, n = i.process(n));
             }
             return n = N(n), n;
         }
@@ -29024,7 +29033,7 @@ var require_default$1 = /* @__PURE__ */ __commonJSMin(((e) => {
                             var c = "[/removed]",
                                 l = r.position + c.length;
                             return o.push([s === !1 ? r.position : s, l]), s = !1, c;
-                        } else return s || = r.position, "[removed]";
+                        } else return s ||=r.position, "[removed]";
                     else return t(e, n, r);
                 },
                 remove: function(e) {
@@ -29232,7 +29241,7 @@ var require_default$1 = /* @__PURE__ */ __commonJSMin(((e) => {
             e = d(e || {}), e.stripIgnoreTag && (e.onIgnoreTag && console.error("Notes: cannot use these two options \"stripIgnoreTag\" and \"onIgnoreTag\" at the same time"), e.onIgnoreTag = r.onIgnoreTagStripAll), e.whiteList || e.allowList ? e.whiteList = f(e.whiteList || e.allowList) : e.whiteList = r.whiteList, this.attributeWrapSign = e.singleQuotedAttributeValue === !0 ? "'" : r.attributeWrapSign, e.onTag = e.onTag || r.onTag, e.onTagAttr = e.onTagAttr || r.onTagAttr, e.onIgnoreTag = e.onIgnoreTag || r.onIgnoreTag, e.onIgnoreTagAttr = e.onIgnoreTagAttr || r.onIgnoreTagAttr, e.safeAttrValue = e.safeAttrValue || r.safeAttrValue, e.escapeHtml = e.escapeHtml || r.escapeHtml, this.options = e, e.css === !1 ? this.cssFilter = !1 : (e.css = e.css || {}, this.cssFilter = new n(e.css));
         }
         h.prototype.process = function(e) {
-            if (e || = "", e = e.toString(), !e) return "";
+            if (e ||="", e = e.toString(), !e) return "";
             var t = this,
                 n = t.options,
                 i = n.whiteList,
@@ -29639,15 +29648,15 @@ function isEquivalentArray(e, t) {
 var NavigationType;
 (function(e) {
     e.pop = "pop", e.push = "push";
-})(NavigationType || = {});
+})(NavigationType ||={});
 var NavigationDirection;
 (function(e) {
     e.back = "back", e.forward = "forward", e.unknown = "";
-})(NavigationDirection || = {});
+})(NavigationDirection ||={});
 var NavigationFailureType;
 (function(e) {
     e[e.aborted = 4] = "aborted", e[e.cancelled = 8] = "cancelled", e[e.duplicated = 16] = "duplicated";
-})(NavigationFailureType || = {});
+})(NavigationFailureType ||={});
 var routerKey = Symbol(""),
     routeLocationKey = Symbol("");
 
@@ -34225,7 +34234,7 @@ var _hoisted_1$5 = {
     };
 
 function render$1(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$4, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$4, [...t[0] ||=[createBaseVNode("path", {
         fill: "currentColor",
         d: "M12 3c5.5 0 10 3.58 10 8s-4.5 8-10 8c-1.24 0-2.43-.18-3.53-.5C5.55 21 2 21 2 21c2.33-2.33 2.7-3.9 2.75-4.5C3.05 15.07 2 13.13 2 11c0-4.42 4.5-8 10-8"
     }, null, -1)]]);
@@ -34241,7 +34250,7 @@ var chat_default = {
     };
 
 function render(e, t) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$3, [...t[0] || = [createBaseVNode("path", {
+    return openBlock(), createElementBlock("svg", _hoisted_1$3, [...t[0] ||=[createBaseVNode("path", {
         fill: "currentColor",
         d: "M7.41 8.58L12 13.17l4.59-4.59L18 10l-6 6l-6-6z"
     }, null, -1)]]);
@@ -34311,7 +34320,7 @@ var chevron_down_default = {
                 message: n,
                 "data-test-id": "chat-message-typing"
             }, {
-                default: withCtx(() => [...t[0] || = [createBaseVNode("div", { class: "chat-message-typing-body" }, [
+                default: withCtx(() => [...t[0] ||=[createBaseVNode("div", { class: "chat-message-typing-body" }, [
                     createBaseVNode("span", { class: "chat-message-typing-circle" }),
                     createBaseVNode("span", { class: "chat-message-typing-circle" }),
                     createBaseVNode("span", { class: "chat-message-typing-circle" })
