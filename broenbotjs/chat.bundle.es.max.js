@@ -12046,7 +12046,7 @@ function constructChatWebsocketUrl(e, t, n, r) {
 	return `${i.replace(/^https?/, o)}/chat?sessionId=${n}&executionId=${t}${r ? "&isPublic=true" : ""}`;
 }
 function stripVerbatimBlocks(e) {
-	return (e ?? "").replace(/<verbatim\b[^>]*>[\s\S]*?<\/verbatim>/gi, "");
+	return (e ?? "").replace(/<verbatim\b[^>]*>([\s\S]*?)<\/verbatim>/gi, "$1");
 }
 function sanitizeInputTextForWebhook(e) {
 	return (e ?? "").replace(/[\r\n]+/g, " ");
