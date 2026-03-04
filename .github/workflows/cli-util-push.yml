@@ -1,4 +1,4 @@
-name: Auto-Update README with GPT-5-mini
+name: Auto-Update README with GitHub Models
 
 on:
   push:
@@ -17,26 +17,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Read .zshrc (truncate to 20k)
+      - name: Prepare zshrc content
         shell: bash
         run: |
-          set -euo pipefail
-
-          mkdir -p cli-utilities
-
-          if [[ -f "cli-utilities/.zshrc" ]]; then
-            head -c 20000 "cli-utilities/.zshrc" > "zshrc.txt"
+          set -e
+          if [ -f cli-utilities/.zshrc ]; then
+            head -c 20000 cli-utilities/.zshrc > zshrc.txt
           else
-            printf '%s\n' 'No .zshrc found at cli-utilities/.zshrc' > "zshrc.txt"
+            echo "No .zshrc found." > zshrc.txt
           fi
 
-      - name: Generate README via GitHub Models (gpt-5-mini)
+      - name: Generate README via GitHub Models
         uses: actions/github-script@v7
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require("fs");
 
@@ -46,36 +44,44 @@ jobs:
               "You are documenting zsh utility functions.\n\n" +
               "ZSHRC CONTENT:\n" +
               zshrc +
-              "\n\n" +
-              "Create a COMPLETE README.md containing:\n" +
-              "1. QUICK START setup instructions\n" +
+              "\n\nCreate a COMPLETE README.md containing:\n" +
+              "1. Quick start setup\n" +
               "2. Function list with one-line descriptions\n" +
-              "3. Usage examples for each function\n" +
+              "3. Usage examples\n" +
               "4. Prerequisites if required\n\n" +
-              "Focus strictly on functions defined in the file.\n" +
-              "Output clean Markdown only.\n";
+              "Output clean Markdown only.";
 
-            const res = await github.request(
-              "POST https://models.github.ai/inference/gpt-5-mini",
+            const headers = {};
+            headers.Authorization = "Bearer " + process.env.TOKEN;
+            headers["Content-Type"] = "application/json";
+            headers["X-GitHub-Api-Version"] = "2022-11-28";
+
+            const response = await fetch(
+              "https://models.github.ai/inference/chat/completions",
               {
-                headers: {
-                  "x-github-api-version": "2022-11-28",
-                },
-                model: "gpt-5-mini",
-                messages: [{ role: "user", content: prompt }],
-                temperature: 0.1,
-                max_tokens: 2000,
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify({
+                  model: "openai/gpt-4.1-mini",
+                  messages: [{ role: "user", content: prompt }],
+                  temperature: 0.1,
+                  max_tokens: 2000
+                })
               }
             );
 
-            const readme =
-              res?.data?.choices?.[0]?.message?.content ||
-              "# CLI Utilities\n\nREADME generation failed (no content returned).\n";
+            const data = await response.json();
 
-            fs.writeFileSync("cli-utilities/README.md", readme, "utf8");
+            let readme = "# CLI Utilities\n\nREADME generation failed.";
+
+            if (data && data.choices && data.choices.length > 0) {
+              readme = data.choices[0].message.content;
+            }
+
+            fs.writeFileSync("cli-utilities/README.md", readme);
 
       - name: Commit README if changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "docs: auto-update README via gpt-5-mini"
+          commit_message: "docs: auto-update README via GitHub Models"
           file_pattern: "cli-utilities/README.md"
