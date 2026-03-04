@@ -10,7 +10,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  models: read  # ✅ This is the correct permission
+  models: read
 
 jobs:
   update-readme:
@@ -23,46 +23,76 @@ jobs:
     - name: Read .zshrc functions
       id: zshrc
       run: |
-        ZSHRC_CONTENT=$(cat cli-utilities/.zshrc 2>/dev/null || echo "")
+        ZSHRC_CONTENT=$(cat cli-utilities/.zshrc 2>/dev/null || echo "No .zshrc found")
         echo "content<<EOF" >> $GITHUB_OUTPUT
-        echo "$ZSHRC_CONTENT" >> $GITHUB_OUTPUT
+        echo "$ZSHRC_CONTENT" | head -c 20000 >> $GITHUB_OUTPUT  # Limit size
         echo "EOF" >> $GITHUB_OUTPUT
+        echo "Zshrc length: ${#ZSHRC_CONTENT}"
         
     - name: Generate README with GitHub Models GPT-5-mini
       id: generate-readme
       run: |
-        cat > prompt.txt << 'EOF'
-        You are documenting zsh utility functions from .zshrc.
+        # Debug: Show zshrc content length
+        echo "ZSHRC preview:"
+        head -50 cli-utilities/.zshrc
         
+        cat > prompt.txt << EOF
+        You are documenting zsh utility functions from .zshrc.
+
         ZSHRC CONTENT:
         ```
         ${{ steps.zshrc.outputs.content }}
         ```
-        
+
         Create a COMPLETE README.md with:
         1. **QUICK START** - Copy-paste setup instructions
         2. **Function list** with 1-line descriptions
         3. **Usage examples** for each function  
         4. **Prerequisites** (Keychain setup if needed)
-        
+
         Focus ONLY on functions in the provided code. Use clean markdown.
         EOF
-        
-        RESPONSE=$(curl -s -X POST \
-          https://models.inference.ai.azure.com/v1/chat/completions \
-          -H "Content-Type: application/json" \
+
+        # Test GitHub Models API - CORRECT ENDPOINT + HEADERS
+        echo "Testing GitHub Models API..."
+        RESPONSE=$(curl -s -L -X POST \
           -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Content-Type: application/json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://models.github.ai/inference/gpt-5-mini \
           -d '{
-            "model": "gpt-5-mini", 
-            "messages": [
-              {"role": "system", "content": "You create perfect README files for zsh utilities."},
-              {"role": "user", "content": "'"$(cat prompt.txt)"'"}
-            ],
+            "model": "gpt-5-mini",
+            "messages": [{"role": "user", "content": "List all functions from this zshrc and write one sentence describing each: ${{ steps.zshrc.outputs.content | truncate(2000) }}"}],
             "temperature": 0.1,
-            "max_tokens": 4000
+            "max_tokens": 2000
           }')
-          
-        echo "$RESPONSE" | jq -r '.choices[0].message.content' > cli-utilities/README.md
+
+        echo "API Response status check:"
+        echo "$RESPONSE" | jq . || echo "Raw response: $RESPONSE"
+
+        # Extract content (handle errors)
+        if echo "$RESPONSE" | jq -e '.choices' > /dev/null; then
+          echo "$RESPONSE" | jq -r '.choices[0].message.content' > cli-utilities/README.md
+          echo "✅ README generated successfully"
+        else
+          echo "❌ API failed, creating fallback README"
+          cat > cli-utilities/README.md << 'EOF'
+# CLI Utilities
+
+## Quick Start
+1. Copy functions from `cli-utilities/.zshrc` to your `~/.zshrc`
+2. Run `source ~/.zshrc`
+3. Set up Keychain secrets for functions requiring API keys
+
+## Available Functions
+See `cli-utilities/.zshrc` for full implementation.
+
+**API call failed - manual update required.**
+EOF
+        fi
+        
+        echo "README preview:"
+        head -20 cli-utilities/README.md
         
     - name: Commit README if changed
       uses: stefanzweifel/git-auto-commit-action@v5
