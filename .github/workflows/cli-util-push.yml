@@ -2,100 +2,80 @@ name: Auto-Update README with GPT-5-mini
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'cli-utilities/.zshrc'
-    branches: [ main ]
-  workflow_dispatch:
+      - "cli-utilities/.zshrc"
+  workflow_dispatch: {}
 
 permissions:
   contents: write
-  pull-requests: write
   models: read
 
 jobs:
   update-readme:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      
-    - name: Read .zshrc functions
-      id: zshrc
-      run: |
-        ZSHRC_CONTENT=$(cat cli-utilities/.zshrc 2>/dev/null || echo "No .zshrc found")
-        echo "content<<EOF" >> $GITHUB_OUTPUT
-        echo "$ZSHRC_CONTENT" | head -c 20000 >> $GITHUB_OUTPUT  # Limit size
-        echo "EOF" >> $GITHUB_OUTPUT
-        echo "Zshrc length: ${#ZSHRC_CONTENT}"
-        
-    - name: Generate README with GitHub Models GPT-5-mini
-      id: generate-readme
-      run: |
-        # Debug: Show zshrc content length
-        echo "ZSHRC preview:"
-        head -50 cli-utilities/.zshrc
-        
-        cat > prompt.txt << EOF
-        You are documenting zsh utility functions from .zshrc.
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        ZSHRC CONTENT:
-        ```
-        ${{ steps.zshrc.outputs.content }}
-        ```
+      - name: Read .zshrc (truncate to 20k)
+        shell: bash
+        run: |
+          set -euo pipefail
 
-        Create a COMPLETE README.md with:
-        1. **QUICK START** - Copy-paste setup instructions
-        2. **Function list** with 1-line descriptions
-        3. **Usage examples** for each function  
-        4. **Prerequisites** (Keychain setup if needed)
+          mkdir -p cli-utilities
 
-        Focus ONLY on functions in the provided code. Use clean markdown.
-        EOF
+          if [[ -f "cli-utilities/.zshrc" ]]; then
+            head -c 20000 "cli-utilities/.zshrc" > "zshrc.txt"
+          else
+            printf '%s\n' 'No .zshrc found at cli-utilities/.zshrc' > "zshrc.txt"
+          fi
 
-        # Test GitHub Models API - CORRECT ENDPOINT + HEADERS
-        echo "Testing GitHub Models API..."
-        RESPONSE=$(curl -s -L -X POST \
-          -H "Authorization: Bearer $GITHUB_TOKEN" \
-          -H "Content-Type: application/json" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://models.github.ai/inference/gpt-5-mini \
-          -d '{
-            "model": "gpt-5-mini",
-            "messages": [{"role": "user", "content": "List all functions from this zshrc and write one sentence describing each: ${{ steps.zshrc.outputs.content | truncate(2000) }}"}],
-            "temperature": 0.1,
-            "max_tokens": 2000
-          }')
+      - name: Generate README via GitHub Models (gpt-5-mini)
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require("fs");
 
-        echo "API Response status check:"
-        echo "$RESPONSE" | jq . || echo "Raw response: $RESPONSE"
+            const zshrc = fs.readFileSync("zshrc.txt", "utf8");
 
-        # Extract content (handle errors)
-        if echo "$RESPONSE" | jq -e '.choices' > /dev/null; then
-          echo "$RESPONSE" | jq -r '.choices[0].message.content' > cli-utilities/README.md
-          echo "✅ README generated successfully"
-        else
-          echo "❌ API failed, creating fallback README"
-          cat > cli-utilities/README.md << 'EOF'
-# CLI Utilities
+            const prompt =
+              "You are documenting zsh utility functions.\n\n" +
+              "ZSHRC CONTENT:\n" +
+              zshrc +
+              "\n\n" +
+              "Create a COMPLETE README.md containing:\n" +
+              "1. QUICK START setup instructions\n" +
+              "2. Function list with one-line descriptions\n" +
+              "3. Usage examples for each function\n" +
+              "4. Prerequisites if required\n\n" +
+              "Focus strictly on functions defined in the file.\n" +
+              "Output clean Markdown only.\n";
 
-## Quick Start
-1. Copy functions from `cli-utilities/.zshrc` to your `~/.zshrc`
-2. Run `source ~/.zshrc`
-3. Set up Keychain secrets for functions requiring API keys
+            const res = await github.request(
+              "POST https://models.github.ai/inference/gpt-5-mini",
+              {
+                headers: {
+                  "x-github-api-version": "2022-11-28",
+                },
+                model: "gpt-5-mini",
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.1,
+                max_tokens: 2000,
+              }
+            );
 
-## Available Functions
-See `cli-utilities/.zshrc` for full implementation.
+            const readme =
+              res?.data?.choices?.[0]?.message?.content ||
+              "# CLI Utilities\n\nREADME generation failed (no content returned).\n";
 
-**API call failed - manual update required.**
-EOF
-        fi
-        
-        echo "README preview:"
-        head -20 cli-utilities/README.md
-        
-    - name: Commit README if changed
-      uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: "docs: Auto-update README with GPT-5-mini"
-        file_pattern: 'cli-utilities/README.md'
+            fs.writeFileSync("cli-utilities/README.md", readme, "utf8");
+
+      - name: Commit README if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: auto-update README via gpt-5-mini"
+          file_pattern: "cli-utilities/README.md"
