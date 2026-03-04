@@ -1,0 +1,71 @@
+name: Auto-Update README with GPT-5-mini
+
+on:
+  push:
+    paths:
+      - 'cli-utilities/.zshrc'
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  models: read  # ✅ This is the correct permission
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Read .zshrc functions
+      id: zshrc
+      run: |
+        ZSHRC_CONTENT=$(cat cli-utilities/.zshrc 2>/dev/null || echo "")
+        echo "content<<EOF" >> $GITHUB_OUTPUT
+        echo "$ZSHRC_CONTENT" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        
+    - name: Generate README with GitHub Models GPT-5-mini
+      id: generate-readme
+      run: |
+        cat > prompt.txt << 'EOF'
+        You are documenting zsh utility functions from .zshrc.
+        
+        ZSHRC CONTENT:
+        ```
+        ${{ steps.zshrc.outputs.content }}
+        ```
+        
+        Create a COMPLETE README.md with:
+        1. **QUICK START** - Copy-paste setup instructions
+        2. **Function list** with 1-line descriptions
+        3. **Usage examples** for each function  
+        4. **Prerequisites** (Keychain setup if needed)
+        
+        Focus ONLY on functions in the provided code. Use clean markdown.
+        EOF
+        
+        RESPONSE=$(curl -s -X POST \
+          https://models.inference.ai.azure.com/v1/chat/completions \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -d '{
+            "model": "gpt-5-mini", 
+            "messages": [
+              {"role": "system", "content": "You create perfect README files for zsh utilities."},
+              {"role": "user", "content": "'"$(cat prompt.txt)"'"}
+            ],
+            "temperature": 0.1,
+            "max_tokens": 4000
+          }')
+          
+        echo "$RESPONSE" | jq -r '.choices[0].message.content' > cli-utilities/README.md
+        
+    - name: Commit README if changed
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "docs: Auto-update README with GPT-5-mini"
+        file_pattern: 'cli-utilities/README.md'
