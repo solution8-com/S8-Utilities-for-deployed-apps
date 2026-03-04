@@ -34,9 +34,6 @@ export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
 
 export NODE_ENV="development"
 
-# AWS CLI Profile (if applicable)
-# export AWS_PROFILE="default"
-
 # NVM (for managing Node.js versions) - we use volta instead
 # export NVM_DIR="$HOME/.nvm"
 # [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
